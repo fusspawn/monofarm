@@ -19,14 +19,11 @@ namespace monotest.Objects
         public Texture2D PlayerTexture;
         public Vector2 Location;
         public float Rotation;
-        public float Speed = 15f;
-
-        private GraphicsDevice Device;
+        public float Speed = 3f;
 
         public Player(int X, int Y)
         {
-            Location = new Vector2(X * 64, Y * 64);
-            Location = -Location;
+            Location = new Vector2(X * 16, Y * 16);
         }
 
 
@@ -34,29 +31,39 @@ namespace monotest.Objects
         {
             Vector2 NextLoc = Location;
 
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-            {
-                NextLoc -= new Vector2(1, 0)*Speed;
-                Rotation = MathHelper.ToRadians(0);
-            }
-
             if (Keyboard.GetState().IsKeyDown(Keys.A))
             {
-                NextLoc += new Vector2(1, 0)*Speed;
-                Rotation = MathHelper.ToRadians(-180);
+                NextLoc -= new Vector2(1, 0)*Speed;
+                Rotation = MathHelper.ToRadians(180);
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.S))
+            if (Keyboard.GetState().IsKeyDown(Keys.D))
             {
-                NextLoc -= new Vector2(0, 1)*Speed;
-                Rotation = MathHelper.ToRadians(90);
+                NextLoc += new Vector2(1, 0)*Speed;
+                Rotation = MathHelper.ToRadians(0);
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
-                NextLoc += new Vector2(0, 1)*Speed;
+                NextLoc -= new Vector2(0, 1)*Speed;
                 Rotation = MathHelper.ToRadians(-90);
             }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.S))
+            {
+                NextLoc += new Vector2(0, 1)*Speed;
+                Rotation = MathHelper.ToRadians(90);
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.OemMinus))
+                MainGame.MainCamera.Zoom -= 0.05f;
+
+
+            if (Keyboard.GetState().IsKeyDown(Keys.OemPlus))
+                MainGame.MainCamera.Zoom += 0.05f;
+
+            if (Keyboard.GetState().IsKeyDown(Keys.R))
+                MainGame.MainCamera.Zoom =1f;
 
             if (DebugManager.Display)
             {
@@ -64,16 +71,16 @@ namespace monotest.Objects
                 DebugManager.Values["PlayerXTile"] = ((int)loc.X).ToString();
                 DebugManager.Values["PlayerYTile"] = ((int)loc.Y).ToString();
             }
+
+            Location = NextLoc;
+            MainGame.MainCamera.Pos = Location;
         }
+        
 
         public void Draw(SpriteBatch B, GameTime T)
         {
-            if (Device == null)
-                Device = B.GraphicsDevice;
-
-            B.Begin();
-            B.Draw(PlayerTexture, new Vector2(Device.Viewport.Width / 2,
-                Device.Viewport.Height / 2), null, null,
+            B.Begin(SpriteSortMode.BackToFront, null, null, null, null, null, MainGame.MainCamera.GetTransformation(B.GraphicsDevice));
+            B.Draw(PlayerTexture, Location, null, null,
                 new Vector2(PlayerTexture.Width / 2, PlayerTexture.Height / 2), 
                 Rotation, null, null, SpriteEffects.None, 0f);
             B.End();
@@ -86,11 +93,7 @@ namespace monotest.Objects
 
         public Vector2 TilePosition
         {
-            get
-            {
-                return MainGame.GameMap.GetTileAtScreenPos(new Vector2(Device.Viewport.Width/2,
-                    Device.Viewport.Height/2));
-            }
+            get { return Location/16; }
         }
     }
 }

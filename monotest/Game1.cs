@@ -3,6 +3,7 @@ using monotest.Objects;
 using monotest.Rendering;
 using monotest.Util;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -13,8 +14,10 @@ namespace monotest
     /// </summary>
     public class MainGame : Game
     {
-        public static TileMap GameMap;
+        public static ChunkedWorld World;
         public static Player MainPlayer;
+        public static Camera2d MainCamera;
+        public static ContentManager ContentManager;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -23,9 +26,17 @@ namespace monotest
 
         public MainGame()
         {
+            MainGame.ContentManager = Content;
+            MainCamera = new Camera2d();
+
+            ChunkedWorld.Init();
+            World = new ChunkedWorld();
+            
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
         }
+
+        public static bool DebugMode = false;
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -35,18 +46,18 @@ namespace monotest
         /// </summary>
         protected override void Initialize()
         {
-            Noise2d.WriteDebugJSONForMap = true;
+            //Noise2d.WriteDebugJSONForMap = true;
             // TODO: Add your initialization logic here
 
-            GameMap = new TileMap();
-            DrawList.Add(GameMap);
-            UpdateList.Add(GameMap);
+            //GameMap = new TileMap();
+            DrawList.Add(World);
+            UpdateList.Add(World);
 
             DebugManager Debug = new DebugManager();
             DrawList.Add(Debug);
             UpdateList.Add(Debug);
 
-            MainPlayer = new Player(250, 250);
+            MainPlayer = new Player(50, 50);
             DrawList.Add(MainPlayer);
             UpdateList.Add(MainPlayer);
             base.Initialize();
@@ -88,8 +99,7 @@ namespace monotest
                 Exit();
             foreach(var comp in UpdateList)
                 comp.Update(gameTime);
-
-            GameMap.Offset = MainPlayer.Location;
+            
             base.Update(gameTime);
         }
 

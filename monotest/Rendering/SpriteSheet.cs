@@ -16,7 +16,7 @@ namespace monotest.Rendering
             get
             {
                 return Tex.Width
-                       /(TileWidth + TileMargin*2);
+                       /(TileWidth + TileMargin);
             }
         }
 
@@ -25,7 +25,7 @@ namespace monotest.Rendering
             get
             {
                 return Tex.Height
-                       /(TileHeight + TileMargin*2);
+                       /(TileHeight + TileMargin);
             }
         }
 
@@ -34,11 +34,12 @@ namespace monotest.Rendering
             Rectangle Ret = new Rectangle();
             Ret.Width = TileWidth;
             Ret.Height = TileHeight;
+            int xTiles = XTiles;
 
-            var xPos = Index % XTiles;
-            var yPos = Index / XTiles;
+            var xPos = Index % xTiles;
+            var yPos = Index / xTiles;
 
-            Ret.X = (xPos * (TileWidth + TileMargin)) ;
+            Ret.X = (xPos * (TileWidth + TileMargin));
             Ret.Y = (yPos * (TileHeight + TileMargin));
 
             return Ret;

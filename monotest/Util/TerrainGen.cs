@@ -10,26 +10,24 @@ namespace monotest.Util
         private static Random R = new Random();
         private static List<int> Unwalkables = new List<int>() { 18, 19, 6, 7, 8, 9 }; 
 
-
         public static int TileForHeight(int x, int y, int Height)
         {
-            
-            R = new Random(x * y);
-
             if (Height < 50)
-                return R.Next(18, 19);
+                return 7;
             if (Height < 128)
-                return R.Next(4, 5);
-
+                return 6;
             if (Height < 200)
-                return R.Next(0 , 3);
+                return 5;   
 
-            return R.Next(6, 9);
+            return R.Next(0, 1);
         }
 
-        public static bool IsTileWalkable(int type)
+        public static int DecorationForTile(int x, int y)
         {
-            return !Unwalkables.Contains(type);
+            if (R.Next(100) < 3)
+                return 527;
+
+            return -1;
         }
     }
 }
