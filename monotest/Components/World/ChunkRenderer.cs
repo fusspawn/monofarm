@@ -32,8 +32,5 @@ namespace monotest.Components.World
         {
             throw new NotImplementedException();
         }
-
-        }
-
     }
 }
