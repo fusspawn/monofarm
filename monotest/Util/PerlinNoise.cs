@@ -10,6 +10,7 @@ using LibNoise.Primitive;
 using monotest.Objects;
 using Newtonsoft.Json;
 using LibNoise.Utils;
+using Nez.Console;
 
 
 namespace monotest.Util
@@ -19,9 +20,9 @@ namespace monotest.Util
 
         public static int MaxX;
         public static int MaxY;
-        private static ImprovedPerlin Perlin = new ImprovedPerlin();
+        public static ImprovedPerlin Perlin = new ImprovedPerlin();
 
-
+        private static float NoiseScale =1f;
         static float min = float.MaxValue;
         static float max = float.MinValue;
 
@@ -30,11 +31,20 @@ namespace monotest.Util
             return Perlin.GetValue(x, 0, y);
         }
 
+
+        [Command("world-noise-scale","")]
+        public static void SetWorldNoiseScale(float _NoiseScale)
+        {
+            DebugConsole.instance.log("NoiseSCALE =" + _NoiseScale.ToString());
+            Noise2d.NoiseScale = _NoiseScale;
+            ChunkedWorld.ReseedWorld();
+        }
+
         public static int[,] GenerateNoiseMap(int startx, int starty, int width, int height, int octaves, int maxrange)
         {
             
-            Console.WriteLine("StartX: " + startx + " StartY: " + starty);
-            Console.WriteLine("Width: " + width + " Height: " + height);
+            DebugConsole.instance.log("StartX: " + startx + " StartY: " + starty);
+            DebugConsole.instance.log("Width: " + width + " Height: " + height);
 
             var data = new float[width * height];
             var frequency = .5f;
@@ -48,8 +58,8 @@ namespace monotest.Util
                     {
                         var i = x - startx;
                         var j = y - starty;
-                        float normx = (x * frequency)/ChunkedWorld.ChunkWidth;
-                        float normy = (y * frequency)/ChunkedWorld.ChunkHeight;
+                        float normx = ((x * frequency)/ChunkedWorld.ChunkWidth) *NoiseScale;
+                        float normy = ((y * frequency)/ChunkedWorld.ChunkHeight) *NoiseScale;
                         var noise = NoiseAt(normx, normy);
                         noise = data[j*width + i] += noise*amplitude;
                         min = Math.Min(min, noise);

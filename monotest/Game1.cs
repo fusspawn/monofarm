@@ -6,13 +6,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Nez;
 
 namespace monotest
 {
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class MainGame : Game
+    public class MainGame : Core
     {
         public static ChunkedWorld World;
         public static Player MainPlayer;
@@ -26,13 +27,17 @@ namespace monotest
 
         public MainGame()
         {
+
+#if WINDOWS
+            // this line is only needed if your are on Windows!!!
+            Window.ClientSizeChanged += Core.onClientSizeChanged;
+#endif
             MainGame.ContentManager = Content;
             MainCamera = new Camera2d();
 
             ChunkedWorld.Init();
             World = new ChunkedWorld();
             
-            graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
         }
 

@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Nez.Console;
 using IDrawable = monotest.Interfaces.IDrawable;
 using IUpdateable = monotest.Interfaces.IUpdateable;
 
@@ -26,11 +27,34 @@ namespace monotest.Objects
         public static int TileXPixels = 16;
         public static int TileYPixels = 16;
 
+        public static bool UseRenderTextures = true;
+
         public static void Init()
         {
+            ReseedWorld();
             Noise2d.MaxX = MaxXChunks * ChunkWidth;
             Noise2d.MaxY = MaxYChunks * ChunkHeight;
-        } 
+        }
+
+        [Command("toggle-chunk-render-textures","toggles chunk rendering mode between pertile and rendertexture cache")]
+        public static void ToggleRenderMode()
+        {
+            UseRenderTextures = !UseRenderTextures;
+            ChunkCache = new Dictionary<int, Chunk>();
+        }
+
+        [Command("set-chunk-range", "sets max chunk rendering range")]
+        public static void SetChunkRange(int Range)
+        {
+            MaxChunkRange = Range;
+        }
+
+        [Command("reseed", "reseed the world")]
+        public static void ReseedWorld()
+        {
+            Noise2d.Perlin.Seed = new Random().Next(int.MinValue, int.MaxValue); 
+            ChunkCache = new Dictionary<int, Chunk>();
+        }
 
         public static int GetChunkIndex(int X, int Y)
         {
@@ -46,7 +70,7 @@ namespace monotest.Objects
         {
             ChunkCache[GetChunkIndex(X, Y)] = new Chunk(X, Y);
             ChunkCache[GetChunkIndex(X, Y)].LoadContent(MainGame.ContentManager);
-            Console.WriteLine("BuildChunk("+ X +"," + Y + ");");
+            DebugConsole.instance.log("BuildChunk("+ X +"," + Y + ");");
         }
 
         public void Update(GameTime T)
@@ -102,7 +126,7 @@ namespace monotest.Objects
 
             Unload.ForEach((c) =>
             {
-                Console.WriteLine("Removing Chunk");
+                DebugConsole.instance.log("Removing Chunk");
                 ChunkCache.Remove(c);
             });
             

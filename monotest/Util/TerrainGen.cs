@@ -14,18 +14,22 @@ namespace monotest.Util
         {
             if (Height < 50)
                 return 7;
-            if (Height < 128)
+            if (Height < 75)
                 return 6;
+            if (Height < 190)
+                return 5;
+
             if (Height < 200)
-                return 5;   
+                return 8;
 
             return R.Next(0, 1);
         }
 
-        public static int DecorationForTile(int x, int y)
+        public static int DecorationForTile(int x, int y, int Height)
         {
-            if (R.Next(100) < 3)
-                return 527;
+            if(Height > 128 && Height < 170)
+                if (R.Next(100) < 3)
+                    return 527;
 
             return -1;
         }

@@ -24,6 +24,8 @@ namespace monotest.Objects
         public Player(int X, int Y)
         {
             Location = new Vector2(X * 16, Y * 16);
+
+            MainGame.MainCamera.Pos = Location;
         }
 
 
