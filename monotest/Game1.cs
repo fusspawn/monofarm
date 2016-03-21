@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nez;
+using monotest.Components.World;
 
 namespace monotest
 {
@@ -23,7 +24,9 @@ namespace monotest
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public static List<monotest.Interfaces.IUpdateable> UpdateList = new List<monotest.Interfaces.IUpdateable>();
-        public static List<monotest.Interfaces.IDrawable> DrawList = new List<monotest.Interfaces.IDrawable>();  
+        public static List<monotest.Interfaces.IDrawable> DrawList = new List<monotest.Interfaces.IDrawable>();
+
+        public static Scene MainScene;
 
         public MainGame()
         {
@@ -33,10 +36,10 @@ namespace monotest
             Window.ClientSizeChanged += Core.onClientSizeChanged;
 #endif
             MainGame.ContentManager = Content;
-            MainCamera = new Camera2d();
+            //MainCamera = new Camera2d();
 
-            ChunkedWorld.Init();
-            World = new ChunkedWorld();
+            //ChunkedWorld.Init();
+            //World = new ChunkedWorld();
             
             Content.RootDirectory = "Content";
         }
@@ -55,16 +58,26 @@ namespace monotest
             // TODO: Add your initialization logic here
 
             //GameMap = new TileMap();
-            DrawList.Add(World);
-            UpdateList.Add(World);
+            //DrawList.Add(World);
+            //UpdateList.Add(World);
 
-            DebugManager Debug = new DebugManager();
-            DrawList.Add(Debug);
-            UpdateList.Add(Debug);
+            //DebugManager Debug = new DebugManager();
+            //DrawList.Add(Debug);
+            //UpdateList.Add(Debug);
 
-            MainPlayer = new Player(50, 50);
-            DrawList.Add(MainPlayer);
-            UpdateList.Add(MainPlayer);
+            //MainPlayer = new Player(50, 50);
+            //DrawList.Add(MainPlayer);
+            //UpdateList.Add(MainPlayer);
+
+            MainScene = new Scene();
+            MainScene.addRenderer(new ScreenSpaceRenderer(100, 0));
+            Core.scene = MainScene;
+
+            Entity ChunkMan = new Entity("ChunkManager");
+            ChunkManager man = ChunkMan.addComponent<ChunkManager>() as ChunkManager;
+            ChunkManager.CmEntity = ChunkMan;
+            MainScene.addEntity(ChunkMan);
+
             base.Initialize();
         }
 

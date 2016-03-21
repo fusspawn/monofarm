@@ -17,9 +17,9 @@ namespace monotest.Components.World
         public int ChunkX;
         public int ChunkY;
 
-        private int[,] MapData;
-        private int[,] BaseTileData;
-        private int[,] DecorationTileData;
+        public int[,] MapData;
+        public int[,] BaseTileData;
+        public int[,] DecorationTileData;
         
         public void Init(int X, int Y)
         {

@@ -9,10 +9,11 @@ using Microsoft.Xna.Framework;
 using Nez.Console;
 using monotest.Util;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace monotest.Components.World
 {
-    class ChunkManager : Component
+    class ChunkManager : Component, IUpdatable
     {
         public static Dictionary<int, Entity> ChunkCache
             = new Dictionary<int, Entity>();
@@ -48,9 +49,12 @@ namespace monotest.Components.World
             cdata.Init(X,Y);
             CEnt.addComponent<ChunkRenderer>();
             CEnt.transform.parent = CmEntity.transform;
+
+            ChunkCache[GetChunkIndex(X, Y)] = CEnt;
+            CmEntity.scene.addEntity(CEnt);
         }
 
-        public void Update(GameTime T)
+        public void update()
         {
             SpawnUnloadedChunks();
             CullChunksUneeded();
@@ -79,8 +83,9 @@ namespace monotest.Components.World
         private void CullChunksUneeded()
         {
             /*
-            Vector2 CameraChunkPos = WorldToChunk((int)MainGame.MainCamera.Pos.X,
-                (int)MainGame.MainCamera.Pos.Y);
+             Vector2 CameraChunkPos = WorldToChunk((int)CmEntity.scene.camera.position.X,
+                (int)CmEntity.scene.camera.position.Y);
+
 
             int StartX = (int)(CameraChunkPos.X - (MaxChunkRange / 2));
             int StartY = (int)(CameraChunkPos.Y - (MaxChunkRange / 2));
@@ -89,17 +94,17 @@ namespace monotest.Components.World
 
 
             Rectangle ChunkRect = new Rectangle(StartX, StartY, EndX - StartX, EndY - StartY);
-            List<int> Unload = (from c in ChunkCache.AsParallel()
+            List<KeyValuePair<int, Entity>> Unload = (from c in ChunkCache.AsParallel()
                                 where !ChunkRect.Contains(c.Value.ChunkX, c.Value.ChunkY)
-                                select c.Key).ToList();
+                                select c).ToList();
 
             Unload.ForEach((c) =>
             {
                 DebugConsole.instance.log("Removing Chunk");
+                CmEntity.scene.entities.remove(c);
                 ChunkCache.Remove(c);
-            });
+            }); 
             */
-
         }
 
         public Vector2 WorldToChunk(int X, int Y)
@@ -116,6 +121,15 @@ namespace monotest.Components.World
                 (int)(X * (ChunkWidth * TileXPixels)),
                 (int)(Y * (ChunkHeight * TileYPixels))
             );
+        }
+
+        public override void onAddedToEntity()
+        {
+            TileSheet = new SpriteSheet();
+            TileSheet.TileWidth = 16;
+            TileSheet.TileHeight = 16;
+            TileSheet.TileMargin = 1;
+            TileSheet.Tex = entity.scene.contentManager.Load<Texture2D>("roguelikeSheet_transparent");
         }
     }
 }
