@@ -57,22 +57,17 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Components\Mob\Player.cs" />
+    <Compile Include="Components\Movement\SimpleMover.cs" />
+    <Compile Include="Components\Util\MouseWheelZoomer.cs" />
     <Compile Include="Components\World\ChunkDataComponent.cs" />
     <Compile Include="Components\World\ChunkManager.cs" />
+    <Compile Include="Components\World\ChunkPhysics.cs" />
     <Compile Include="Components\World\ChunkRenderer.cs" />
     <Compile Include="Game1.cs" />
-    <Compile Include="Interfaces\IDrawable.cs" />
-    <Compile Include="Interfaces\IUpdateable.cs" />
-    <Compile Include="Objects\AI\Mob.cs" />
-    <Compile Include="Objects\Chunk.cs" />
-    <Compile Include="Objects\ChunkedWorld.cs" />
-    <Compile Include="Objects\GameObject.cs" />
-    <Compile Include="Objects\Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rendering\Camera2D.cs" />
-    <Compile Include="Rendering\SpriteSheet.cs" />
-    <Compile Include="Util\DebugManager.cs" />
+    <Compile Include="Util\SpriteSheet.cs" />
     <Compile Include="Util\PerlinNoise.cs" />
     <Compile Include="Util\TerrainGen.cs" />
   </ItemGroup>

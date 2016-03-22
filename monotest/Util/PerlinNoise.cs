@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LibNoise.Primitive;
-using monotest.Objects;
 using Newtonsoft.Json;
 using LibNoise.Utils;
 using Nez.Console;
@@ -37,7 +36,6 @@ namespace monotest.Util
         {
             DebugConsole.instance.log("NoiseSCALE =" + _NoiseScale.ToString());
             Noise2d.NoiseScale = _NoiseScale;
-            ChunkedWorld.ReseedWorld();
         }
 
         public static int[,] GenerateNoiseMap(int startx, int starty, int width, int height, int octaves, int maxrange)
@@ -58,8 +56,8 @@ namespace monotest.Util
                     {
                         var i = x - startx;
                         var j = y - starty;
-                        float normx = ((x * frequency)/ChunkedWorld.ChunkWidth) *NoiseScale;
-                        float normy = ((y * frequency)/ChunkedWorld.ChunkHeight) *NoiseScale;
+                        float normx = ((x * frequency)/ width) *NoiseScale;
+                        float normy = ((y * frequency)/ height) *NoiseScale;
                         var noise = NoiseAt(normx, normy);
                         noise = data[j*width + i] += noise*amplitude;
                         min = Math.Min(min, noise);

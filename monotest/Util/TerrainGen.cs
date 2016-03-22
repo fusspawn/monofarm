@@ -8,7 +8,7 @@ namespace monotest.Util
     class TerrainGen
     {
         private static Random R = new Random();
-        private static List<int> Unwalkables = new List<int>() { 18, 19, 6, 7, 8, 9 }; 
+        private static List<int> Unwalkables = new List<int>() { 0, 1, 7, 527}; 
 
         public static int TileForHeight(int x, int y, int Height)
         {
@@ -32,6 +32,11 @@ namespace monotest.Util
                     return 527;
 
             return -1;
+        }
+
+        public static bool IsWalkable(int Type)
+        {
+            return !Unwalkables.Contains(Type);
         }
     }
 }

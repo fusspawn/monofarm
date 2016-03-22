@@ -25,14 +25,9 @@ namespace monotest.Components.World
         {
             ChunkX = X;
             ChunkY = Y;
-        }
-
-        public override void onAddedToEntity()
-        {
-            
 
             MapData = Noise2d.GenerateNoiseMap(ChunkX * 64, ChunkY * 64,
-                64, 64, 8, 256);
+             64, 64, 8, 256);
             BaseTileData = new int[64, 64];
             DecorationTileData = new int[64, 64];
 
@@ -48,6 +43,13 @@ namespace monotest.Components.World
                         (ChunkX * 64) + i, (ChunkY * 64) + j, MapData[i, j]);
                 }
             }
+        }
+
+        public override void onAddedToEntity()
+        {
+            
+
+         
         }
     }
 }

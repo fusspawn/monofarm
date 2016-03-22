@@ -27,6 +27,8 @@ namespace monotest.Components.World
         public static int TileYPixels = 16;
         public static bool UseRenderTextures = true;
 
+        public static bool DisableRenderer = false;
+
         public static SpriteSheet TileSheet;
 
         public static Entity CmEntity;
@@ -34,6 +36,13 @@ namespace monotest.Components.World
         public static int GetChunkIndex(int X, int Y)
         {
             return Y * MaxXChunks + X;
+        }
+
+
+        [Command("render-world", "")]
+        public static void SetWorldRenderDisabled(bool enabled)
+        {
+            DisableRenderer = enabled;
         }
 
         public static bool IsChunkLoaded(int X, int Y)
@@ -44,23 +53,23 @@ namespace monotest.Components.World
         public void BuildChunk(int X, int Y)
         {
             Entity CEnt = new Entity("chunk-"+X+"-"+Y);
-            CEnt.transform.localPosition = ChunkToWorld(X, Y);
+            CmEntity.scene.addEntity(CEnt);
+            CEnt.transform.position = ChunkToWorld(X, Y);
+
             var cdata = CEnt.addComponent<ChunkDataComponent>() as ChunkDataComponent;
             cdata.Init(X,Y);
+
+            CEnt.addComponent<ChunkPhysics>();
             CEnt.addComponent<ChunkRenderer>();
-            CEnt.transform.parent = CmEntity.transform;
+
 
             ChunkCache[GetChunkIndex(X, Y)] = CEnt;
-            CmEntity.scene.addEntity(CEnt);
         }
 
         public void update()
         {
             SpawnUnloadedChunks();
             CullChunksUneeded();
-
-            if (Keyboard.GetState().IsKeyDown(Keys.F11))
-                MainGame.DebugMode = !MainGame.DebugMode;
         }
 
         private void SpawnUnloadedChunks()

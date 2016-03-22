@@ -22,20 +22,24 @@ namespace monotest.Components.World
 
         public override void onAddedToEntity()
         {
-            Data = entity.getComponent<ChunkDataComponent>() as ChunkDataComponent;           
+            renderLayer = 0;
+            Data = entity.getComponent<ChunkDataComponent>();         
+
             base.onAddedToEntity();
         }
 
         public override void render(Graphics graphics, Camera camera)
         {
             if (TextureDirty || RenderTexture == null)
-                DrawChunkToTexture(graphics.spriteBatch);
+                DrawChunkToTexture(graphics, camera);
 
-            graphics.spriteBatch.Draw(RenderTexture, entity.transform.localPosition, Color.White);
+            if(!ChunkManager.DisableRenderer)
+                graphics.spriteBatch.Draw(RenderTexture, entity.transform.position, Color.White);
         }
 
-        public void DrawChunkToTexture(SpriteBatch B)
+        public void DrawChunkToTexture(Graphics graphics, Camera camera)
         {
+            var B = graphics.spriteBatch;
 
             if (RenderTexture == null)
             {
@@ -58,29 +62,30 @@ namespace monotest.Components.World
                 {
                     CachePos = new Vector2(x * ChunkManager.TileSheet.TileWidth,
                         y * ChunkManager.TileSheet.TileHeight);
+
                     B.Draw(ChunkManager.TileSheet.Tex,
-                        CachePos, ChunkManager.TileSheet.GetTileRect(Data.BaseTileData[x, y]),
-                        MainGame.DebugMode == true ? DebugColor : Color.White);
+                        CachePos, ChunkManager.TileSheet.GetTileRect(Data.BaseTileData[x, y]), Color.White);
                 }
             }
-            B.End();
-            B.Begin();
+
             for (var x = 0; x < Data.BaseTileData.GetLength(0); x++)
             {
                 for (var y = 0; y < Data.BaseTileData.GetLength(1); y++)
                 {
-                    CachePos = new Vector2(x * ChunkManager.TileSheet.TileWidth, y * ChunkManager.TileSheet.TileHeight);
+                    CachePos = new Vector2(x * ChunkManager.TileSheet.TileWidth, 
+                        y * ChunkManager.TileSheet.TileHeight);
+
                     if (Data.DecorationTileData[x, y] != -1)
                     {
                         B.Draw(ChunkManager.TileSheet.Tex,
-                            CachePos, ChunkManager.TileSheet.GetTileRect(Data.DecorationTileData[x, y]),
-                            MainGame.DebugMode == true ? DebugColor : Color.White);
+                            CachePos, ChunkManager.TileSheet.GetTileRect(Data.DecorationTileData[x, y]), Color.White);
                     }
                 }
             }
             B.End();
             B.GraphicsDevice.SetRenderTarget(OldTarget);
             B.Begin();
+
         }
     }
 }
