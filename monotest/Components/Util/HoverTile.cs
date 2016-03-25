@@ -19,9 +19,9 @@ namespace monotest.Components.Util
 
             WorldPos.X = (int)(WorldPos.X/ChunkManager.TileXPixels);
             WorldPos.Y = (int)(WorldPos.Y/ChunkManager.TileYPixels);
-            WorldPos = WorldPos*16;
-            WorldPos.X = WorldPos.X + 8;
-            WorldPos.Y = WorldPos.Y + 8;
+            WorldPos = WorldPos*ChunkManager.TileXPixels;
+            WorldPos.X = WorldPos.X + (int)(ChunkManager.TileXPixels/2);
+            WorldPos.Y = WorldPos.Y + (int)(ChunkManager.TileYPixels / 2);
             entity.transform.position = WorldPos;
         }
     }

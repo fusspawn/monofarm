@@ -26,21 +26,21 @@ namespace monotest.Components.World
             ChunkX = X;
             ChunkY = Y;
 
-            MapData = Noise2d.GenerateNoiseMap(ChunkX * 64, ChunkY * 64,
-             64, 64, 8, 256);
-            BaseTileData = new int[64, 64];
-            DecorationTileData = new int[64, 64];
+            MapData = Noise2d.GenerateNoiseMap(ChunkX * ChunkManager.ChunkWidth, ChunkY * ChunkManager.ChunkHeight,
+             ChunkManager.ChunkWidth, ChunkManager.ChunkHeight, 8, 256);
+            BaseTileData = new int[ChunkManager.ChunkWidth, ChunkManager.ChunkHeight];
+            DecorationTileData = new int[ChunkManager.ChunkWidth, ChunkManager.ChunkHeight];
 
-            for (var i = 0; i < 64; i++)
+            for (var i = 0; i < ChunkManager.ChunkWidth; i++)
             {
-                for (var j = 0; j < 64; j++)
+                for (var j = 0; j < ChunkManager.ChunkHeight; j++)
                 {
                     BaseTileData[i, j]
-                        = TerrainGen.TileForHeight((ChunkX * 64) + i, (ChunkY * 64) + j,
+                        = TerrainGen.TileForHeight((ChunkX * ChunkManager.ChunkWidth) + i, (ChunkY * ChunkManager.ChunkHeight) + j,
                             MapData[i, j]);
 
                     DecorationTileData[i, j] = TerrainGen.DecorationForTile(
-                        (ChunkX * 64) + i, (ChunkY * 64) + j, MapData[i, j]);
+                        (ChunkX * ChunkManager.ChunkWidth) + i, (ChunkY * ChunkManager.ChunkHeight) + j, MapData[i, j]);
 
                     if (!TerrainGen.IsWalkable(BaseTileData[i, j])
                         || !TerrainGen.IsWalkable(DecorationTileData[i, j]))
