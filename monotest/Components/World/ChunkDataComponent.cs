@@ -41,15 +41,19 @@ namespace monotest.Components.World
 
                     DecorationTileData[i, j] = TerrainGen.DecorationForTile(
                         (ChunkX * 64) + i, (ChunkY * 64) + j, MapData[i, j]);
+
+                    if (!TerrainGen.IsWalkable(BaseTileData[i, j])
+                        || !TerrainGen.IsWalkable(DecorationTileData[i, j]))
+                    {
+                        entity.colliders.add(new BoxCollider((i * ChunkManager.TileSheet.TileWidth),
+                            (j * ChunkManager.TileSheet.TileHeight), ChunkManager.TileSheet.TileWidth,
+                            ChunkManager.TileSheet.TileHeight));
+                    }
                 }
             }
         }
 
-        public override void onAddedToEntity()
-        {
-            
 
-         
-        }
+        
     }
 }

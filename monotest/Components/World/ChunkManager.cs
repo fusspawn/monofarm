@@ -32,12 +32,22 @@ namespace monotest.Components.World
         public static SpriteSheet TileSheet;
 
         public static Entity CmEntity;
+        public static bool DEBUG_PHYSICS = false;
+
+        public static TileData MouseTile;
+
 
         public static int GetChunkIndex(int X, int Y)
         {
             return Y * MaxXChunks + X;
         }
 
+
+        [Command("debug-chunk-phys", " true/false ")]
+        public static void DebugPhysics(bool on)
+        {
+            DEBUG_PHYSICS = on;
+        }
 
         [Command("render-world", "")]
         public static void SetWorldRenderDisabled(bool enabled)
@@ -54,12 +64,13 @@ namespace monotest.Components.World
         {
             Entity CEnt = new Entity("chunk-"+X+"-"+Y);
             CmEntity.scene.addEntity(CEnt);
+
             CEnt.transform.position = ChunkToWorld(X, Y);
 
             var cdata = CEnt.addComponent<ChunkDataComponent>() as ChunkDataComponent;
             cdata.Init(X,Y);
 
-            CEnt.addComponent<ChunkPhysics>();
+            //CEnt.addComponent<ChunkPhysics>();
             CEnt.addComponent<ChunkRenderer>();
 
 
@@ -68,6 +79,7 @@ namespace monotest.Components.World
 
         public void update()
         {
+            MouseTile = TileUnderMouse();
             SpawnUnloadedChunks();
             CullChunksUneeded();
         }
@@ -91,7 +103,7 @@ namespace monotest.Components.World
 
         private void CullChunksUneeded()
         {
-            /*
+            
              Vector2 CameraChunkPos = WorldToChunk((int)CmEntity.scene.camera.position.X,
                 (int)CmEntity.scene.camera.position.Y);
 
@@ -103,17 +115,24 @@ namespace monotest.Components.World
 
 
             Rectangle ChunkRect = new Rectangle(StartX, StartY, EndX - StartX, EndY - StartY);
-            List<KeyValuePair<int, Entity>> Unload = (from c in ChunkCache.AsParallel()
-                                where !ChunkRect.Contains(c.Value.ChunkX, c.Value.ChunkY)
-                                select c).ToList();
+            List<KeyValuePair<int, Entity>> Unload =  new List<KeyValuePair<int, Entity>>();
+
+            foreach (var Ent in ChunkCache)
+            {
+                ChunkDataComponent Comp = Ent.Value.getComponent<ChunkDataComponent>();
+                if (Vector2.Distance(CameraChunkPos, new Vector2(Comp.ChunkX, Comp.ChunkY)) > MaxChunkRange * 1.5)
+                {
+                    Unload.Add(Ent);
+                }
+            }
 
             Unload.ForEach((c) =>
             {
                 DebugConsole.instance.log("Removing Chunk");
-                CmEntity.scene.entities.remove(c);
-                ChunkCache.Remove(c);
+                c.Value.destroy();
+                ChunkCache.Remove(c.Key);
             }); 
-            */
+            
         }
 
         public Vector2 WorldToChunk(int X, int Y)
@@ -139,6 +158,50 @@ namespace monotest.Components.World
             TileSheet.TileHeight = 16;
             TileSheet.TileMargin = 1;
             TileSheet.Tex = entity.scene.contentManager.Load<Texture2D>("roguelikeSheet_transparent");
+        }
+
+        public static TileData GetTileData(int Tx, int Ty)
+        {
+            int tCX = (int) (Tx/ChunkWidth);
+            int tCY = (int) (Ty/ChunkHeight);
+            int tCOffX = Math.Abs((int) (Tx%ChunkWidth));
+            int tCOffY = Math.Abs((int) (Ty%ChunkHeight));
+
+            if (!IsChunkLoaded(tCX, tCY))
+            {
+                return null;
+            }
+
+
+            TileData Data = new TileData();
+            ChunkDataComponent cData = ChunkCache[GetChunkIndex(tCX, tCY)].getComponent<ChunkDataComponent>();
+
+            if (cData == null)
+            {
+                return null;
+            }
+
+            Data.ChunkTileOffsetX = tCOffX;
+            Data.ChunkTileOffsetY = tCOffY;
+            Data.TileX = Tx;
+            Data.TileY = Ty;
+            Data.TileBaseType = cData.BaseTileData[tCOffX, tCOffY];
+            Data.TileDetailType = cData.DecorationTileData[tCOffX, tCOffY];
+            Data.IsTileWalkable = (TerrainGen.IsWalkable(Data.TileBaseType) &&
+                                   TerrainGen.IsWalkable(Data.TileDetailType));
+
+            return Data;
+        }
+
+
+        public TileData TileUnderMouse()
+        {
+            Vector2 WorldPos = entity.scene.camera.screenToWorldPoint(Input.rawMousePosition);
+
+            WorldPos.X = (int)(WorldPos.X / ChunkManager.TileXPixels);
+            WorldPos.Y = (int)(WorldPos.Y / ChunkManager.TileYPixels);
+
+            return GetTileData((int)WorldPos.X, (int)WorldPos.Y);
         }
     }
 }

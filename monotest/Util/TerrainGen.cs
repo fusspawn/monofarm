@@ -28,7 +28,7 @@ namespace monotest.Util
         public static int DecorationForTile(int x, int y, int Height)
         {
             if(Height > 128 && Height < 170)
-                if (R.Next(100) < 3)
+                if (R.Next(100) < 25)
                     return 527;
 
             return -1;

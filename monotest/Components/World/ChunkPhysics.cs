@@ -22,11 +22,14 @@ namespace monotest.Components.World
                     if (!TerrainGen.IsWalkable(data.BaseTileData[i, j])
                      || !TerrainGen.IsWalkable(data.DecorationTileData[i, j]))
                     {
-                        entity.colliders.add(new BoxCollider(((data.ChunkX * 64) + i) * 16,
-                            ((data.ChunkY * 64) + j) * 16, 16, 16));
+                        entity.colliders.add(new BoxCollider(((data.ChunkX * 64) + i) * ChunkManager.TileSheet.TileWidth,
+                            ((data.ChunkY * 64) + j) * ChunkManager.TileSheet.TileHeight, ChunkManager.TileSheet.TileWidth,
+                            ChunkManager.TileSheet.TileHeight));
                     }
                 }
             }
+
+            base.onAddedToEntity();
         }
     }
 }

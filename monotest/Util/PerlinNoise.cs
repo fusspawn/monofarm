@@ -31,6 +31,13 @@ namespace monotest.Util
         }
 
 
+        [Command("noise-debug", "")]
+        public static void DebugMinMax()
+        {
+            DebugConsole.instance.log($"min: {min} max: {max}");
+        }
+
+
         [Command("world-noise-scale","")]
         public static void SetWorldNoiseScale(float _NoiseScale)
         {
@@ -75,7 +82,7 @@ namespace monotest.Util
             {
                 for (var y = 0; y < height; y++)
                 {
-                    map[x, y] = (int) (((data[y*width + x] - min) / (max - min)) * maxrange);
+                    map[x, y] = (int) (((data[y*width + x] - -1) / (1 - -1)) * maxrange);
                 }
             }
 

@@ -19,13 +19,18 @@ namespace monotest.Components.Mob
         {
             Entity Ent = new Entity("Player");
             Scene.addEntity(Ent);
+
+            Ent.transform.scale=new Vector2(.5f, .5f);
             Sprite S = new Sprite(Scene.contentManager.Load<Texture2D>("manBlue_stand"));
 
             S.renderLayer = 1;
             Ent.addComponent(S);
             Ent.addComponent<SimpleMover>();
             Ent.addComponent<MouseWheelZoomer>();
-            Ent.colliders.add(new CircleCollider());
+            Ent.addComponent<PathFollower>();
+            Ent.addComponent(new FollowCamera(Ent));
+
+            Ent.colliders.add(new BoxCollider());
             
 
             

@@ -16,7 +16,7 @@ namespace monotest.Components.Movement
     /// </summary>
     public class SimpleMover : Component, IUpdatable
     {
-        float _speed = 10f;
+        float _speed = 1f;
         Mover _mover;
 
 
