@@ -20,14 +20,8 @@ namespace monotest.Rendering
             }
         }
 
-        public int YTiles
-        {
-            get
-            {
-                return Tex.Height
-                       /(TileHeight + TileMargin);
-            }
-        }
+        public int YTiles => Tex.Height
+                             /(TileHeight + TileMargin);
 
         public Rectangle GetTileRect(int Index)
         {

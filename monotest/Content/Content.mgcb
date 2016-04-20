@@ -143,21 +143,6 @@
 /processorParam:TextureFormat=Color
 /build:roguelikeSheet_transparent.png
 
-#begin NezDefaultBMFont.fnt
-/copy:NezDefaultBMFont.fnt
-
-#begin NezDefaultBMFont.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:NezDefaultBMFont.png
-
 #begin select16.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -169,4 +154,35 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:select16.png
+
+#begin roguelikeChar_transparent.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:roguelikeChar_transparent.png
+
+#begin nez/NezDefaultBMFont.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:nez/NezDefaultBMFont.png
+
+#begin nez\NezDefaultFont.fnt
+/importer:BitmapFontImporter
+/processor:BitmapFontProcessor
+/processorParam:packTexturesIntoXnb=True
+/processorParam:compressTextures=False
+/build:nez\NezDefaultFont.fnt
 

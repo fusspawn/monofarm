@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using monotest.Rendering;
@@ -15,49 +16,53 @@ namespace monotest.Components.World
 {
     class ChunkManager : Component, IUpdatable
     {
-        public static Dictionary<int, Entity> ChunkCache
-            = new Dictionary<int, Entity>();
+        public static ChunkManager Instance;
+        public Entity[,] Chunks;
+        public int MaxXChunks = 500;
+        public int MaxYChunks = 500;
+        public int ChunkWidth = 128;
+        public int ChunkHeight = 128;
+        public int MaxChunkRange = 5;
+        public int TileXPixels = 16;
+        public int TileYPixels = 16;
+        public bool UseRenderTextures = true;
 
-        public static int MaxXChunks = 50;
-        public static int MaxYChunks = 50;
-        public static int ChunkWidth = 64;
-        public static int ChunkHeight = 64;
-        public static int MaxChunkRange = 8;
-        public static int TileXPixels = 16;
-        public static int TileYPixels = 16;
-        public static bool UseRenderTextures = true;
+        public bool DisableRenderer = false;
 
-        public static bool DisableRenderer = false;
+        public SpriteSheet TileSheet;
 
-        public static SpriteSheet TileSheet;
+        public Entity CmEntity;
+        public bool DEBUG_PHYSICS = false;
 
-        public static Entity CmEntity;
-        public static bool DEBUG_PHYSICS = false;
-
-        public static TileData MouseTile;
+        public TileData MouseTile;
 
 
-        public static int GetChunkIndex(int X, int Y)
+        public ChunkManager()
+        {
+            Instance = this;
+            Chunks = new Entity[MaxXChunks,MaxYChunks];
+        }
+
+        public int GetChunkIndex(int X, int Y)
         {
             return Y * MaxXChunks + X;
         }
 
-
-        [Command("debug-chunk-phys", " true/false ")]
-        public static void DebugPhysics(bool on)
+        [Command("debug-chunk-physics", " true/false")]
+        public void DebugPhysics(bool on)
         {
             DEBUG_PHYSICS = on;
         }
 
         [Command("render-world", "")]
-        public static void SetWorldRenderDisabled(bool enabled)
+        public void SetWorldRenderDisabled(bool enabled)
         {
             DisableRenderer = enabled;
         }
 
-        public static bool IsChunkLoaded(int X, int Y)
+        public bool IsChunkLoaded(int X, int Y)
         {
-            return ChunkCache.ContainsKey(GetChunkIndex(X, Y));
+            return Chunks[X,Y] != null;
         }
 
         public void BuildChunk(int X, int Y)
@@ -65,28 +70,26 @@ namespace monotest.Components.World
             Entity CEnt = new Entity("chunk-"+X+"-"+Y);
             CmEntity.scene.addEntity(CEnt);
 
-            CEnt.transform.position = ChunkToWorld(X, Y);
-
+            CEnt.transform.position = ChunkToWorld(X, Y).ToVector2();
             var cdata = CEnt.addComponent<ChunkDataComponent>() as ChunkDataComponent;
             cdata.Init(X,Y);
-
-            //CEnt.addComponent<ChunkPhysics>();
+            
             CEnt.addComponent<ChunkRenderer>();
 
 
-            ChunkCache[GetChunkIndex(X, Y)] = CEnt;
+            Chunks[X,Y] = CEnt;
         }
 
         public void update()
         {
             MouseTile = TileUnderMouse();
             SpawnUnloadedChunks();
-            CullChunksUneeded();
+            //CullChunksUneeded();
         }
 
         private void SpawnUnloadedChunks()
         {
-            Vector2 CameraChunkPos = WorldToChunk((int)CmEntity.scene.camera.position.X,
+            Vector2Int CameraChunkPos = WorldToChunk((int)CmEntity.scene.camera.position.X,
                 (int)CmEntity.scene.camera.position.Y);
 
             int StartX = (int)(CameraChunkPos.X - (MaxChunkRange / 2));
@@ -97,14 +100,19 @@ namespace monotest.Components.World
 
             for (int i = StartX; i < EndX; i++)
                 for (int j = StartY; j < EndY; j++)
-                    if (!IsChunkLoaded(i, j))
+                    if ( InChunkBounds(i, j) && !IsChunkLoaded(i, j) )
                         BuildChunk(i, j);
+        }
+
+        private bool InChunkBounds(int i, int i1)
+        {
+            return i >= 0 && i <= MaxXChunks && i1 >= 0 && i1 <= MaxYChunks;
         }
 
         private void CullChunksUneeded()
         {
             
-             Vector2 CameraChunkPos = WorldToChunk((int)CmEntity.scene.camera.position.X,
+             Vector2Int CameraChunkPos = WorldToChunk((int)CmEntity.scene.camera.position.X,
                 (int)CmEntity.scene.camera.position.Y);
 
 
@@ -115,12 +123,12 @@ namespace monotest.Components.World
 
 
             Rectangle ChunkRect = new Rectangle(StartX, StartY, EndX - StartX, EndY - StartY);
-            List<KeyValuePair<int, Entity>> Unload =  new List<KeyValuePair<int, Entity>>();
+            List<Entity> Unload =  new List<Entity>();
 
-            foreach (var Ent in ChunkCache)
+            foreach (var Ent in Chunks)
             {
-                ChunkDataComponent Comp = Ent.Value.getComponent<ChunkDataComponent>();
-                if (Vector2.Distance(CameraChunkPos, new Vector2(Comp.ChunkX, Comp.ChunkY)) > MaxChunkRange * 1.5)
+                ChunkDataComponent Comp = Ent.getComponent<ChunkDataComponent>();
+                if (Vector2.Distance(CameraChunkPos.ToVector2(), new Vector2(Comp.ChunkX, Comp.ChunkY)) > MaxChunkRange * 1.5)
                 {
                     Unload.Add(Ent);
                 }
@@ -129,25 +137,50 @@ namespace monotest.Components.World
             Unload.ForEach((c) =>
             {
                 DebugConsole.instance.log("Removing Chunk");
-                c.Value.destroy();
-                ChunkCache.Remove(c.Key);
+                var comp = c.getComponent<ChunkDataComponent>();
+                c.destroy();
+                Chunks[comp.ChunkX, comp.ChunkY] = null;
             }); 
             
         }
 
-        public Vector2 WorldToChunk(int X, int Y)
+        public Vector2Int WorldToChunk(int X, int Y)
         {
-            return new Vector2(
-                (int)(X / (ChunkWidth * TileXPixels)),
-                (int)(Y / (ChunkHeight * TileYPixels))
+            return new Vector2Int(
+                X / (ChunkWidth * TileXPixels),
+                Y / (ChunkHeight * TileYPixels)
             );
         }
 
-        public Vector2 ChunkToWorld(int X, int Y)
+        public Vector2Int ChunkToWorld(int X, int Y)
         {
-            return new Vector2(
-                (int)(X * (ChunkWidth * TileXPixels)),
-                (int)(Y * (ChunkHeight * TileYPixels))
+            return new Vector2Int(
+                X * (ChunkWidth * TileXPixels),
+                Y * (ChunkHeight * TileYPixels)
+            );
+        }
+
+        public Vector2Int TileToWorld(int X, int Y)
+        {
+            return new Vector2Int(
+                    X * TileXPixels,
+                    Y * TileYPixels
+             );
+        }
+
+        public Vector2Int TileToChunk(int X, int Y)
+        {
+            return new Vector2Int(
+                    X / ChunkWidth,
+                    Y / ChunkHeight
+             );
+        }
+
+        public Vector2Int WorldToTile(int X, int Y)
+        {
+            return new Vector2Int(
+                    X / TileXPixels,
+                    Y / TileYPixels
             );
         }
 
@@ -160,10 +193,12 @@ namespace monotest.Components.World
             TileSheet.Tex = entity.scene.contentManager.Load<Texture2D>("roguelikeSheet_transparent");
         }
 
-        public static TileData GetTileData(int Tx, int Ty)
+        public TileData GetTileData(int Tx, int Ty)
         {
-            int tCX = (int) (Tx/ChunkWidth);
-            int tCY = (int) (Ty/ChunkHeight);
+            Vector2Int ChunkLoc = TileToChunk(Tx, Ty);
+            int tCX = ChunkLoc.X;
+            int tCY = ChunkLoc.Y;
+
             int tCOffX = Math.Abs((int) (Tx%ChunkWidth));
             int tCOffY = Math.Abs((int) (Ty%ChunkHeight));
 
@@ -174,34 +209,208 @@ namespace monotest.Components.World
 
 
             TileData Data = new TileData();
-            ChunkDataComponent cData = ChunkCache[GetChunkIndex(tCX, tCY)].getComponent<ChunkDataComponent>();
+            ChunkDataComponent cData = Chunks[tCX, tCY]?.getComponent<ChunkDataComponent>();
 
             if (cData == null)
             {
                 return null;
             }
 
-            Data.ChunkTileOffsetX = tCOffX;
-            Data.ChunkTileOffsetY = tCOffY;
-            Data.TileX = Tx;
-            Data.TileY = Ty;
-            Data.TileBaseType = cData.BaseTileData[tCOffX, tCOffY];
-            Data.TileDetailType = cData.DecorationTileData[tCOffX, tCOffY];
-            Data.IsTileWalkable = (TerrainGen.IsWalkable(Data.TileBaseType) &&
-                                   TerrainGen.IsWalkable(Data.TileDetailType));
+            return cData.ChunkTileData[tCOffX, tCOffY];
+        }
 
-            return Data;
+        public void UpdateBaseTile(int X, int Y, int newType)
+        {
+            Vector2Int ChunkLoc = TileToChunk(X,Y);
+            int tCX = ChunkLoc.X;
+            int tCY = ChunkLoc.Y;
+
+            int tCOffX = Math.Abs((int)(X % ChunkWidth));
+            int tCOffY = Math.Abs((int)(Y % ChunkHeight));
+
+            if (!IsChunkLoaded(tCX, tCY))
+            {
+                return;
+            }
+
+
+            TileData Data = new TileData();
+            ChunkDataComponent cData = Chunks[tCX, tCY]?.getComponent<ChunkDataComponent>();
+
+            if (cData == null)
+            {
+                return;
+            }
+
+            cData.ChunkTileData[tCOffX, tCOffY].TileBaseType = newType;
+            cData.ChunkTileData[tCOffX, tCOffY].UpdateWalkableState();
+
+            cData.IsDirty = true;
+        }
+
+        public void UpdateDetailTile(int X, int Y, int newType)
+        {
+            Vector2Int ChunkLoc = TileToChunk(X, Y);
+            int tCX = ChunkLoc.X;
+            int tCY = ChunkLoc.Y;
+
+            int tCOffX = Math.Abs((int)(X % ChunkWidth));
+            int tCOffY = Math.Abs((int)(Y % ChunkHeight));
+
+            if (!IsChunkLoaded(tCX, tCY))
+            {
+                return;
+            }
+            
+            ChunkDataComponent cData = Chunks[tCX, tCY]?.getComponent<ChunkDataComponent>();
+
+            if (cData == null)
+            {
+                return;
+            }
+
+            cData.ChunkTileData[tCOffX, tCOffY].TileDetailType = newType;
+            cData.ChunkTileData[tCOffX, tCOffY].UpdateWalkableState();
+
+            cData.IsDirty = true;
         }
 
 
         public TileData TileUnderMouse()
         {
             Vector2 WorldPos = entity.scene.camera.screenToWorldPoint(Input.rawMousePosition);
-
-            WorldPos.X = (int)(WorldPos.X / ChunkManager.TileXPixels);
-            WorldPos.Y = (int)(WorldPos.Y / ChunkManager.TileYPixels);
-
-            return GetTileData((int)WorldPos.X, (int)WorldPos.Y);
+            Vector2Int TilePos = WorldToTile((int)WorldPos.X, (int)WorldPos.Y);
+            return GetTileData(TilePos.X, TilePos.Y);
         }
+
+        public bool IsDetailAt(int X, int Y, int type)
+        {
+            return GetTileData(X, Y)?.TileDetailType == type;
+        }
+
+        public TileData SearchClosestDetail(int xs, int ys, int DetailType, int maxDistance=250)
+        {
+
+            if (IsDetailAt(xs, ys, DetailType))
+                return GetTileData(xs, ys);
+
+            for (int d = 1; d < maxDistance; d++)
+            {
+                for (int i = 0; i < d + 1; i++)
+                {
+                    int x1 = xs - d + i;
+                    int y1 = ys - i;
+
+                    // Check point (x1, y1)
+                    if (IsDetailAt(x1, y1, DetailType))
+                        return GetTileData(x1, y1);
+
+                    int x2 = xs + d - i;
+                    int y2 = ys + i;
+
+                    // Check point (x2, y2)
+                    if (IsDetailAt(x2, y2, DetailType))
+                        return GetTileData(x2, y2);
+                }
+
+
+                for (int i = 1; i < d; i++)
+                {
+                    int x1 = xs - i;
+                    int y1 = ys + d - i;
+
+                    // Check point (x1, y1)
+                    if (IsDetailAt(x1, y1, DetailType))
+                        return GetTileData(x1, y1);
+
+                    int x2 = xs + d - i;
+                    int y2 = ys - i;
+
+                    // Check point (x2, y2)
+                    if (IsDetailAt(x2, y2, DetailType))
+                        return GetTileData(x2, y2);
+                }
+            }
+
+            return null;
+        }
+
+
+        public bool IsResourceAt(int X, int Y, string Name)
+        {
+            var res = false;
+            if( GetTileData(X, Y)?.TileEntity.getComponent<ResourceTile>()?.ResourceName == Name )
+                    res = true;
+            return res;
+        }
+
+        public TileData SearchClosestResource(int xs, int ys, string Name, int maxDistance = 250)
+        {
+
+            if (IsResourceAt(xs, ys, Name))
+                return GetTileData(xs, ys);
+
+            for (int d = 1; d < maxDistance; d++)
+            {
+                for (int i = 0; i < d + 1; i++)
+                {
+                    int x1 = xs - d + i;
+                    int y1 = ys - i;
+
+                    // Check point (x1, y1)
+                    if (IsResourceAt(x1, y1, Name))
+                        return GetTileData(x1, y1);
+
+                    int x2 = xs + d - i;
+                    int y2 = ys + i;
+
+                    // Check point (x2, y2)
+                    if  (IsResourceAt(x2, y2, Name))
+                        return GetTileData(x2, y2);
+                }
+
+
+                for (int i = 1; i < d; i++)
+                {
+                    int x1 = xs - i;
+                    int y1 = ys + d - i;
+
+                    // Check point (x1, y1)
+                    if (IsResourceAt(x1, y1, Name))
+                        return GetTileData(x1, y1);
+
+                    int x2 = xs + d - i;
+                    int y2 = ys - i;
+
+                    // Check point (x2, y2)
+                    if (IsResourceAt(x2, y2, Name))
+                        return GetTileData(x2, y2);
+                }
+            }
+
+            return null;
+        }
+
+
+        public void HarvestResource(int x, int y, string Type, Entity target)
+        {
+            if (GetTileData(x, y)?.TileEntity.getComponent<ResourceTile>()?.ResourceName == Type)
+                GetTileData(x, y)?.TileEntity.getComponent<ResourceTile>()?.Harvest(target);
+
+            GetTileData(x, y)?.UpdateWalkableState();
+
+            Vector2Int ChunkLoc = TileToChunk(x, y);
+            int tCX = ChunkLoc.X;
+            int tCY = ChunkLoc.Y;
+
+            if (!IsChunkLoaded(tCX, tCY))
+            {
+                return;
+            }
+
+            ChunkDataComponent cData = Chunks[tCX, tCY]?.getComponent<ChunkDataComponent>();
+            cData.IsDirty = true;
+        }
+
     }
 }

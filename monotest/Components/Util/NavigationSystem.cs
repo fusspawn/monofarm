@@ -42,7 +42,7 @@ namespace monotest.Components.Util
                         break;
                     }
 
-                    foreach (PathNode nabour in GetNextDoorPathNodes(Current))
+                    foreach (PathNode nabour in GetNextDoorPathNodes(Current, End))
                     {
                         if (!CameFrom.ContainsKey(nabour))
                         {
@@ -79,20 +79,20 @@ namespace monotest.Components.Util
             PathNode[] Nodes = Node.ToArray();
             foreach (var n in Nodes)
             {
-                Debug.drawHollowBox(new Vector2((n.Tx * ChunkManager.TileXPixels) +(int)(ChunkManager.TileXPixels/2), 
-                    (n.Ty * ChunkManager.TileYPixels) + (int)(ChunkManager.TileYPixels/2)), ChunkManager.TileXPixels, Color.Green, 10);
+                Debug.drawHollowBox(new Vector2((n.Tx * ChunkManager.Instance.TileXPixels) +(int)(ChunkManager.Instance.TileXPixels /2), 
+                    (n.Ty * ChunkManager.Instance.TileYPixels) + (int)(ChunkManager.Instance.TileYPixels /2)), ChunkManager.Instance.TileXPixels, Color.Green, 10);
             }
         }
 
-        public static List<PathNode> GetNextDoorPathNodes(PathNode Location)
+        public static List<PathNode> GetNextDoorPathNodes(PathNode Location, PathNode End)
         {
             List<PathNode> RetList = new List<PathNode>();
-            TileData Above = ChunkManager.GetTileData(Location.Tx, Location.Ty + 1);
-            TileData Below = ChunkManager.GetTileData(Location.Tx, Location.Ty - 1);
-            TileData Left = ChunkManager.GetTileData(Location.Tx - 1, Location.Ty);
-            TileData Right = ChunkManager.GetTileData(Location.Tx + 1, Location.Ty);
+            TileData Above = ChunkManager.Instance.GetTileData(Location.Tx, Location.Ty + 1);
+            TileData Below = ChunkManager.Instance.GetTileData(Location.Tx, Location.Ty - 1);
+            TileData Left = ChunkManager.Instance.GetTileData(Location.Tx - 1, Location.Ty);
+            TileData Right = ChunkManager.Instance.GetTileData(Location.Tx + 1, Location.Ty);
 
-            if (Above?.IsTileWalkable == true)
+            if (Above?.IsTileWalkable == true || ((Above.TileX == End.Tx) && (Above.TileY == End.Ty)))
             {
                 PathNode Node = new PathNode();
                 Node.Tx = (int)Above?.TileX;
@@ -100,7 +100,7 @@ namespace monotest.Components.Util
                 RetList.Add(Node);
             }
 
-            if (Below?.IsTileWalkable == true)
+            if (Below?.IsTileWalkable == true || ((Below?.TileX == End.Tx) && (Below?.TileY == End.Ty)))
             {
                 PathNode Node = new PathNode();
                 Node.Tx = (int)Below?.TileX;
@@ -108,7 +108,7 @@ namespace monotest.Components.Util
                 RetList.Add(Node);
             }
 
-            if (Left?.IsTileWalkable == true)
+            if (Left?.IsTileWalkable == true || ((Left?.TileX == End.Tx) && (Left?.TileY == End.Ty)))
             {
                 PathNode Node = new PathNode();
                 Node.Tx = (int)Left?.TileX;
@@ -116,7 +116,7 @@ namespace monotest.Components.Util
                 RetList.Add(Node);
             }
 
-            if (Right?.IsTileWalkable == true)
+            if (Right?.IsTileWalkable == true || ((Right?.TileX == End.Tx) && (Right?.TileY == End.Ty)))
             {
                 PathNode Node = new PathNode();
                 Node.Tx = (int)Right?.TileX;

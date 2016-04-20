@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using monotest.Components.AI;
 using monotest.Components.Movement;
 using monotest.Components.Util;
 using Microsoft.Xna.Framework;
@@ -15,26 +16,40 @@ namespace monotest.Components.Mob
 {
     public class PlayerMaker
     {
-        public static Entity CreatePlayerEntity(Scene Scene)
+        public static ScriptableEntity CreatePlayerEntity(Scene Scene)
         {
-            Entity Ent = new Entity("Player");
+            ScriptableEntity Ent = new ScriptableEntity("Player");
             Scene.addEntity(Ent);
-
-            Ent.transform.scale=new Vector2(.5f, .5f);
-            Sprite S = new Sprite(Scene.contentManager.Load<Texture2D>("manBlue_stand"));
-
-            S.renderLayer = 1;
-            Ent.addComponent(S);
+            (Ent.addComponent<CharacterRender>() as CharacterRender).Extras.Add(47);
             Ent.addComponent<SimpleMover>();
             Ent.addComponent<MouseWheelZoomer>();
             Ent.addComponent<PathFollower>();
+            Ent.addComponent<MobData>();
+            Ent.addComponent(new Inventory(10));
             Ent.addComponent(new FollowCamera(Ent));
 
             Ent.colliders.add(new BoxCollider());
             
 
-            
+            AIManager.AIList.Add(Ent);
             Console.WriteLine("player created");
+            return Ent;
+        }
+
+        public static ScriptableEntity CreateDefaultMobEntity(string Name, Scene scene)
+        {
+            ScriptableEntity Ent = new ScriptableEntity(Name);
+            scene.addEntity(Ent);
+
+
+            Ent.addComponent<CharacterRender>();
+            Ent.addComponent<PathFollower>();
+            Ent.addComponent<MobData>();
+            Ent.addComponent(new Inventory(10));
+            Ent.addComponent(new ScriptedComponent("ai/ai_base.lua"));
+
+
+            AIManager.AIList.Add(Ent);
             return Ent;
         }
     }

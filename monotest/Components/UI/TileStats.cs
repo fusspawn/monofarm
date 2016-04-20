@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using monotest.Components.World;
+using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.UI;
 
@@ -14,10 +15,14 @@ namespace monotest.Components.UI
     {
         private UICanvas Canvas;
 
-        private Table Layout;
+        private Window Layout;
 
         private Label XLabel;
         private Label YLabel;
+
+        private Label XOffLabel;
+        private Label YOffLabel;
+
         private Label BaseTypeLabel;
         private Label DetailTypeLabel;
         private Label Walkable;
@@ -25,11 +30,15 @@ namespace monotest.Components.UI
         public override void onAddedToEntity()
         {
             
-            Canvas =(UICanvas) entity.addComponent<UICanvas>();
+            Canvas =  entity.addComponent<UICanvas>() as UICanvas;
             Canvas.renderLayer = 999;
-            Layout = new Table();
+            
+            Layout = new Window("stats", new WindowStyle());
+            Layout.setPosition(250, 250);
             XLabel = new Label("X: ");
             YLabel = new Label("Y: ");
+            XOffLabel = new Label("XOff: ");
+            YOffLabel = new Label("YOff: ");
             BaseTypeLabel= new Label("Base Type: ");
             DetailTypeLabel = new Label("Detail Type: ");
             Walkable = new Label("Walkable: ");
@@ -37,31 +46,38 @@ namespace monotest.Components.UI
 
             Canvas.stage.addElement(Layout);
 
-            Layout.addElement(XLabel);
+            Layout.add(XLabel);
             Layout.row();
-            Layout.addElement(YLabel);
+            Layout.add(YLabel);
             Layout.row();
-            Layout.addElement(BaseTypeLabel);
+            Layout.add(XOffLabel);
             Layout.row();
-            Layout.addElement(DetailTypeLabel);
+            Layout.add(YOffLabel);
             Layout.row();
-            Layout.addElement(Walkable);
+            Layout.add(BaseTypeLabel);
+            Layout.row();
+            Layout.add(DetailTypeLabel);
+            Layout.row();
+            Layout.add(Walkable);
             Layout.row();
         }
         
 
         public void update()
         {
-            TileData Data = ChunkManager.MouseTile;
+            TileData Data = ChunkManager.Instance.MouseTile;
 
             if (Data != null)
             {
                 XLabel.setText("X: " + Data.TileX);
                 YLabel.setText("Y: " + Data.TileY);
+                XOffLabel.setText("XOFf: " + Data.ChunkTileOffsetX);
+                YOffLabel.setText("YOff: " + Data.ChunkTileOffsetY);
                 BaseTypeLabel.setText("Base Type: " + Data.TileBaseType);
                 DetailTypeLabel.setText("Detail Type: " + Data.TileDetailType);
                 Walkable.setText("Walkable: " + Data.IsTileWalkable);
             }
+            
         }
     }
 }

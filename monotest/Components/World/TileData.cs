@@ -1,4 +1,6 @@
-﻿using System;
+﻿using monotest.Util;
+using Nez;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,5 +21,15 @@ namespace monotest.Components.World
         public int TileBaseType;
         public int TileDetailType;
         public bool IsTileWalkable;
+
+        public Entity TileEntity;
+
+        public void UpdateWalkableState()
+        {
+            if (TerrainGen.IsWalkable(TileBaseType) && TerrainGen.IsWalkable(TileDetailType) && TileEntity.getComponent<TIleCollider>() == null)
+                IsTileWalkable = true;
+            else
+                IsTileWalkable = false;
+        }
     }
 }

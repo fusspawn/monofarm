@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Input;
 using Nez;
 using monotest.Components.World;
 using Nez.Sprites;
+using Monotest.Components.Util;
 
 namespace monotest
 {
@@ -20,6 +21,7 @@ namespace monotest
     public class MainGame : Core
     {
         public static ContentManager ContentManager;
+        public static MainGame Instance;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -30,7 +32,7 @@ namespace monotest
 
         public MainGame()
         {
-
+            Instance = this;
 #if WINDOWS
             // this line is only needed if your are on Windows!!!
             Window.ClientSizeChanged += Core.onClientSizeChanged;
@@ -54,22 +56,34 @@ namespace monotest
             MainScene.addRenderer(new RenderLayerRenderer(1, new []{0, 1}));
             MainScene.addRenderer(new ScreenSpaceRenderer(2, 999)); // UI!
 
+             //Make the spatial hash grid match chunk size.
+
             Core.scene = MainScene;
             Entity ChunkMan = new Entity("Managers");
             ChunkManager man = ChunkMan.addComponent<ChunkManager>() as ChunkManager;
-            ChunkManager.CmEntity = ChunkMan;
-            ChunkMan.addComponent<TileStats>();
+            ChunkManager.Instance.CmEntity = ChunkMan;
+            Physics.spatialHashCellSize = ChunkManager.Instance.ChunkWidth * ChunkManager.Instance.TileXPixels;
 
+            Entity UI = new Entity("UI");
+            UI.addComponent<TileStats>();
+            UI.transform.position = new Vector2(200, 200);
+
+
+            MainScene.addEntity(UI);
             MainScene.addEntity(ChunkMan);
 
             MainPlayerEnt = PlayerMaker.CreatePlayerEntity(MainScene);
-            MainPlayerEnt.transform.position = new Vector2(200f, 250f);
+            MainPlayerEnt.transform.position =
+                ChunkManager.Instance.ChunkToWorld(ChunkManager.Instance.MaxXChunks / 2,
+                ChunkManager.Instance.MaxYChunks / 2).ToVector2();
             MainScene.camera.position = MainPlayerEnt.transform.position;
 
 
             Entity TCursor = new Entity("Cursor");
             TCursor.addComponent<SelectedTile>();
             TCursor.addComponent(new Sprite(MainScene.contentManager.Load<Texture2D>("select16"))).renderLayer = 1;
+            TCursor.getComponent<Sprite>().origin = Vector2.Zero;
+            
 
             MainScene.addEntity(TCursor);
             base.Initialize();

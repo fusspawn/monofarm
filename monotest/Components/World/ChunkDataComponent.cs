@@ -11,49 +11,63 @@ using monotest.Util;
 
 namespace monotest.Components.World
 {
-    class ChunkDataComponent : Component
+    public class ChunkDataComponent : Component
     {
 
         public int ChunkX;
         public int ChunkY;
+        public TileData[,] ChunkTileData;
 
-        public int[,] MapData;
-        public int[,] BaseTileData;
-        public int[,] DecorationTileData;
-        
+        public bool IsDirty { get; internal set; }
+
         public void Init(int X, int Y)
         {
             ChunkX = X;
             ChunkY = Y;
+            
+            var  MapData = Noise2d.GenerateNoiseMap(ChunkX * ChunkManager.Instance.ChunkWidth, ChunkY * ChunkManager.Instance.ChunkHeight,
+             ChunkManager.Instance.ChunkWidth, ChunkManager.Instance.ChunkHeight, 8, 256);
+            var  BaseTileData = new int[ChunkManager.Instance.ChunkWidth, ChunkManager.Instance.ChunkHeight];
+            var DecorationTileData = new int[ChunkManager.Instance.ChunkWidth, ChunkManager.Instance.ChunkHeight];
 
-            MapData = Noise2d.GenerateNoiseMap(ChunkX * ChunkManager.ChunkWidth, ChunkY * ChunkManager.ChunkHeight,
-             ChunkManager.ChunkWidth, ChunkManager.ChunkHeight, 8, 256);
-            BaseTileData = new int[ChunkManager.ChunkWidth, ChunkManager.ChunkHeight];
-            DecorationTileData = new int[ChunkManager.ChunkWidth, ChunkManager.ChunkHeight];
+            ChunkTileData = new TileData[ChunkManager.Instance.ChunkWidth, ChunkManager.Instance.ChunkHeight];
 
-            for (var i = 0; i < ChunkManager.ChunkWidth; i++)
+            for (var i = 0; i < ChunkManager.Instance.ChunkWidth; i++)
             {
-                for (var j = 0; j < ChunkManager.ChunkHeight; j++)
+                for (var j = 0; j < ChunkManager.Instance.ChunkHeight; j++)
                 {
                     BaseTileData[i, j]
-                        = TerrainGen.TileForHeight((ChunkX * ChunkManager.ChunkWidth) + i, (ChunkY * ChunkManager.ChunkHeight) + j,
+                        = TerrainGen.TileForHeight((ChunkX * ChunkManager.Instance.ChunkWidth) + i, (ChunkY * ChunkManager.Instance.ChunkHeight) + j,
                             MapData[i, j]);
 
-                    DecorationTileData[i, j] = TerrainGen.DecorationForTile(
-                        (ChunkX * ChunkManager.ChunkWidth) + i, (ChunkY * ChunkManager.ChunkHeight) + j, MapData[i, j]);
 
-                    if (!TerrainGen.IsWalkable(BaseTileData[i, j])
-                        || !TerrainGen.IsWalkable(DecorationTileData[i, j]))
+                    DecorationTileData[i, j] = -1;
+
+                    //527 
+                    var tree = TerrainGen.WantTree(
+                        (ChunkX * ChunkManager.Instance.ChunkWidth) + i, (ChunkY * ChunkManager.Instance.ChunkHeight) + j, MapData[i, j]);
+
+
+                    TileData tData = new TileData();
+                    tData.ChunkTileOffsetX = i;
+                    tData.ChunkTileOffsetY = j;
+                    tData.TileBaseType = BaseTileData[i, j];
+                    tData.TileDetailType = DecorationTileData[i, j];
+                    tData.TileX = (ChunkX * ChunkManager.Instance.ChunkWidth) + i;
+                    tData.TileY = (ChunkY * ChunkManager.Instance.ChunkHeight) + j;
+                    tData.TileEntity =  new Entity();
+
+                    if (tree)
                     {
-                        entity.colliders.add(new BoxCollider((i * ChunkManager.TileSheet.TileWidth),
-                            (j * ChunkManager.TileSheet.TileHeight), ChunkManager.TileSheet.TileWidth,
-                            ChunkManager.TileSheet.TileHeight));
+                        tData.TileEntity.addComponent<TIleCollider>();
+
+                        tData.TileEntity.addComponent(new ResourceTile("wood", 527, tData));
                     }
+
+                    tData.UpdateWalkableState();
+                    ChunkTileData[i, j] = tData;
                 }
             }
         }
-
-
-        
     }
 }

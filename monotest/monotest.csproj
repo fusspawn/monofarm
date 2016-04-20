@@ -57,26 +57,45 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Components\AI\AIManager.cs" />
+    <Compile Include="Components\AI\Harvester.cs" />
+    <Compile Include="Components\Mob\CharacterRender.cs" />
+    <Compile Include="Components\Mob\Inventory.cs" />
+    <Compile Include="Components\Mob\MobData.cs" />
     <Compile Include="Components\Mob\Player.cs" />
     <Compile Include="Components\Movement\PathFollower.cs" />
     <Compile Include="Components\Movement\SimpleMover.cs" />
+    <Compile Include="Components\ScriptableEntity.cs" />
+    <Compile Include="Components\ScriptedComponent.cs" />
     <Compile Include="Components\UI\TileStats.cs" />
     <Compile Include="Components\Util\HoverTile.cs" />
     <Compile Include="Components\Util\MouseWheelZoomer.cs" />
     <Compile Include="Components\Util\NavigationSystem.cs" />
     <Compile Include="Components\World\ChunkDataComponent.cs" />
     <Compile Include="Components\World\ChunkManager.cs" />
-    <Compile Include="Components\World\ChunkPhysics.cs" />
     <Compile Include="Components\World\ChunkRenderer.cs" />
+    <Compile Include="Components\World\ResourceTile.cs" />
+    <Compile Include="Components\World\TIleCollider.cs" />
+    <Compile Include="Components\World\TileComponent.cs" />
     <Compile Include="Components\World\TileData.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="Items\Item.cs" />
+    <Compile Include="Items\ItemDefinitions.cs" />
+    <Compile Include="Items\ItemStack.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\ConsoleFuncs.cs" />
+    <Compile Include="Util\LuaManager.cs" />
     <Compile Include="Util\SpriteSheet.cs" />
     <Compile Include="Util\PerlinNoise.cs" />
     <Compile Include="Util\TerrainGen.cs" />
+    <Compile Include="Util\Vector2Int.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="KeraLua, Version=1.3.2.0, Culture=neutral, PublicKeyToken=04d04586786c6f34, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLua.1.3.2.1\lib\net45\KeraLua.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="LibNoise, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\LibNoise.0.2\lib\NET40\LibNoise.dll</HintPath>
       <Private>True</Private>
@@ -89,12 +108,20 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\MonoGame\v3.0\Assemblies\DesktopGL\MonoGame.Framework.dll</HintPath>
     </Reference>
+    <Reference Include="MonoGame.Framework.Content.Pipeline, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Nez\Nez.PipelineImporter\bin\Debug\MonoGame.Framework.Content.Pipeline.dll</HintPath>
+    </Reference>
     <Reference Include="MonoGame.Framework.Net, Version=3.5.0.1678, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\MonoGame\v3.0\Assemblies\DesktopGL\MonoGame.Framework.Net.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NLua, Version=1.3.2.0, Culture=neutral, PublicKeyToken=8df2ab518030ea95, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLua.1.3.2.1\lib\net45\NLua.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NVorbis, Version=0.8.4.0, Culture=neutral, processorArchitecture=MSIL">
@@ -105,11 +132,15 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\MonoGame\v3.0\Assemblies\DesktopGL\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icon.ico" />
+    <Content Include="license.txt" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb">
@@ -118,20 +149,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Content\debugfont.xnb" />
-    <None Include="Content\manBlue_machine.xnb" />
-    <None Include="Content\manBlue_stand.xnb">
+    <None Include="Content\scripts\ai\ai_nav.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Content\nez\NezDefaultBMFont.xnb">
+    <None Include="Content\scripts\ai\ai_base.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Content\roguelikeSheet_transparent.xnb" />
-    <None Include="Content\select.xnb" />
-    <None Include="Content\spritesheet_characters.xnb">
+    <None Include="Content\scripts\init_globals.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Content\spritesheet_tiles.xnb">
+    <None Include="Content\scripts\items.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
@@ -155,9 +182,14 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scenes\" />
+    <Folder Include="UI\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+xcopy /s /y "D:\monotest\packages\NLua.1.3.2.1\lib\native\*.*" "$(TargetDir)"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

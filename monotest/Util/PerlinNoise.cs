@@ -47,10 +47,6 @@ namespace monotest.Util
 
         public static int[,] GenerateNoiseMap(int startx, int starty, int width, int height, int octaves, int maxrange)
         {
-            
-            DebugConsole.instance.log("StartX: " + startx + " StartY: " + starty);
-            DebugConsole.instance.log("Width: " + width + " Height: " + height);
-
             var data = new float[width * height];
             var frequency = .5f;
             var amplitude = 1f;

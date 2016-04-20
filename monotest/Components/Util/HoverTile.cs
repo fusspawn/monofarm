@@ -1,28 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using monotest.Components.Mob;
 using monotest.Components.World;
-using Microsoft.Xna.Framework;
 using Nez;
+using Nez.Console;
 
-namespace monotest.Components.Util
-{
-    public class SelectedTile 
+namespace Monotest.Components.Util { 
+
+public class SelectedTile
         : Component, IUpdatable
     {
 
         public void update()
         {
-            Vector2 WorldPos = entity.scene.camera.screenToWorldPoint(Input.rawMousePosition);
+            TileData Tdata = ChunkManager.Instance.MouseTile;
+            if(Tdata == null)
+                return;
 
-            WorldPos.X = (int)(WorldPos.X/ChunkManager.TileXPixels);
-            WorldPos.Y = (int)(WorldPos.Y/ChunkManager.TileYPixels);
-            WorldPos = WorldPos*ChunkManager.TileXPixels;
-            WorldPos.X = WorldPos.X + (int)(ChunkManager.TileXPixels/2);
-            WorldPos.Y = WorldPos.Y + (int)(ChunkManager.TileYPixels / 2);
-            entity.transform.position = WorldPos;
+            entity.transform.position = new Vector2(Tdata.TileX * ChunkManager.Instance.TileXPixels, 
+                Tdata.TileY * ChunkManager.Instance.TileYPixels);
+
+
+            if (Input.isKeyPressed(Keys.M) 
+                && !DebugConsole.instance.isOpen)
+            {
+                TileData d = ChunkManager.Instance.MouseTile;
+                if (d.IsTileWalkable)
+                {
+                    var ent = PlayerMaker.CreateDefaultMobEntity("mob", entity.scene);
+                    ent.transform.position = ChunkManager.Instance.TileToWorld(d.TileX, d.TileY).ToVector2();
+                }
+            }
         }
     }
 }

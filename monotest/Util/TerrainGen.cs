@@ -8,7 +8,7 @@ namespace monotest.Util
     class TerrainGen
     {
         private static Random R = new Random();
-        private static List<int> Unwalkables = new List<int>() { 0, 1, 7, 527}; 
+        private static List<int> Unwalkables = new List<int>() { 0, 1, 7, 527 }; 
 
         public static int TileForHeight(int x, int y, int Height)
         {
@@ -25,13 +25,13 @@ namespace monotest.Util
             return R.Next(0, 1);
         }
 
-        public static int DecorationForTile(int x, int y, int Height)
+        public static bool WantTree(int x, int y, int Height)
         {
             if(Height > 128 && Height < 170)
                 if (R.Next(100) < 25)
-                    return 527;
+                    return true;
 
-            return -1;
+            return false;
         }
 
         public static bool IsWalkable(int Type)
